@@ -63,7 +63,7 @@ public class AccreditationServiceImplementation implements AccreditationService 
     }
 
     private String getSalePointName(Long salePointId) throws SalePointException {
-        String salePointServiceUrl = "http://localhost:8080/api/sale-points/" + salePointId;
+        String salePointServiceUrl = "http://sales-point-service:8082/api/sales-point/" + salePointId;
 
         try {
             ResponseEntity<SalePointDTO> response = restTemplate.getForEntity(salePointServiceUrl, SalePointDTO.class);
