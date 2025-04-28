@@ -1,0 +1,20 @@
+package com.accreditations_service.accreditations_service.utils;
+
+public class Constants {
+    public static final String SAVING_ACCREDITATION = "Saving accreditation: ";
+    public static final String ACCREDITATION_SAVED_SUCCESSFULLY = "Accreditation saved successfully";
+    public static final String GET_ALL_ACCREDITATIONS = "Retrieving all accreditations";
+    public static final String GET_ALL_ACCREDITATIONS_SUCCESSFULLY = "Retrieved all accreditations successfully";
+    public static final String GET_ACCREDITATION = "Retrieving accreditation with ID: ";
+    public static final String GET_ACCREDITATION_SUCCESSFULLY = "Retrieved accreditation successfully";
+    public static final String CREATING_ACCREDITATION = "Creating accreditation: ";
+    public static final String ACCREDITATION_CREATED_SUCCESSFULLY = "Accreditation created successfully";
+    public static final String GET_SALE_POINT_NAME = "Getting sale point name: ";
+    public static final String GET_SALE_POINT_NAME_SUCCESSFULLY = "Sale point name retrieved successfully";
+
+    public static final String SALE_POINT_NOT_FOUND = "Sale point not found with ID: ";
+    public static final String ERROR_CALLING_SALE_POINT_SERVICE = "Error calling sale-point-service: ";
+    public static final String COULD_NOT_CONNECT_SALE_POINT_SERVICE = "Could not connect to sale-point-service";
+    public static final String ACCREDITATION_NOT_FOUND = "Accreditation not found with ID: ";
+
+}
