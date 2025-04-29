@@ -14,6 +14,9 @@ public class Accreditation {
     private Long salePointId;
 
     @Column
+    private Long userId;
+
+    @Column
     private Double amount;
 
     @Column
@@ -33,9 +36,10 @@ public class Accreditation {
 
     public Accreditation() {}
 
-    public Accreditation(Long id, Long salePointId, Double amount, String salePointName, LocalDateTime receiptDate, LocalDateTime createdAt, LocalDateTime updatedAt, LocalDateTime deletedAt) {
+    public Accreditation(Long id, Long salePointId, Long userId, Double amount, String salePointName, LocalDateTime receiptDate, LocalDateTime createdAt, LocalDateTime updatedAt, LocalDateTime deletedAt) {
         this.id = id;
         this.salePointId = salePointId;
+        this.userId = userId;
         this.amount = amount;
         this.salePointName = salePointName;
         this.receiptDate = receiptDate;
@@ -52,6 +56,14 @@ public class Accreditation {
 
     public void setSalePointId(Long salePointId) {
         this.salePointId = salePointId;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
     public Double getAmount() {

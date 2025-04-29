@@ -4,6 +4,7 @@ import com.accreditations_service.accreditations_service.dtos.AccreditationDTO;
 import com.accreditations_service.accreditations_service.dtos.CreateAccreditationRequest;
 import com.accreditations_service.accreditations_service.exceptions.AccreditationException;
 import com.accreditations_service.accreditations_service.exceptions.SalePointException;
+import com.accreditations_service.accreditations_service.exceptions.UserException;
 import com.accreditations_service.accreditations_service.models.Accreditation;
 import org.springframework.http.ResponseEntity;
 
@@ -16,5 +17,11 @@ public interface AccreditationService {
 
     ResponseEntity<AccreditationDTO> getAccreditationById(Long id) throws AccreditationException;
 
-    ResponseEntity<AccreditationDTO> createAccreditation(CreateAccreditationRequest newAccreditation) throws SalePointException;
+    ResponseEntity<AccreditationDTO> getAccreditationByIdUser(Long userId, Long id) throws AccreditationException;
+
+    ResponseEntity<AccreditationDTO> createAccreditation(String email, CreateAccreditationRequest newAccreditation) throws SalePointException, UserException;
+
+    Long getUserIdFromEmail(String email) throws UserException;
+
+    void validateAccreditationOwner(Long userId, Long accreditationUserId) throws AccreditationException;
 }
