@@ -16,5 +16,10 @@ public class Constants {
     public static final String ERROR_CALLING_SALE_POINT_SERVICE = "Error calling sale-point-service: ";
     public static final String COULD_NOT_CONNECT_SALE_POINT_SERVICE = "Could not connect to sale-point-service";
     public static final String ACCREDITATION_NOT_FOUND = "Accreditation not found with ID: ";
-
+    public static final String USER_NOT_FOUND = "User not found with email: ";
+    public static final String ERROR_CALLING_USER_SERVICE = "Error calling user-service: ";
+    public static final String NOT_PERM = "The user doesn't have permissions";
+    public static final String VALIDATE_ACCREDITATION_OWNER = "Validating accreditation ownership: ";
+    public static final String VALIDATE_ACCREDITATION_OWNER_ERROR = "The user is not owner of this accreditation";
+    public static final String VALIDATE_ACCREDITATION_OWNER_SUCCESSFULLY = "Accreditation owner validated successfully";
 }
