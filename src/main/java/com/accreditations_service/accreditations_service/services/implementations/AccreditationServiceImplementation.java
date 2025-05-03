@@ -10,6 +10,7 @@ import com.accreditations_service.accreditations_service.models.Accreditation;
 import com.accreditations_service.accreditations_service.repositories.AccreditationRepository;
 import com.accreditations_service.accreditations_service.services.AccreditationService;
 import com.accreditations_service.accreditations_service.utils.Constants;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,15 +26,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class AccreditationServiceImplementation implements AccreditationService {
 
     private static final Logger logger = LoggerFactory.getLogger(AccreditationServiceImplementation.class);
 
-    @Autowired
-    private AccreditationRepository accreditationRepository;
+    private final AccreditationRepository accreditationRepository;
 
-    @Autowired
-    private RestTemplate restTemplate;
+    private final RestTemplate restTemplate;
 
     @Value("${USER_SERVICE_URL}")
     private String USER_SERVICE_URL;
