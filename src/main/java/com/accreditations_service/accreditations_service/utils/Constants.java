@@ -22,4 +22,11 @@ public class Constants {
     public static final String VALIDATE_ACCREDITATION_OWNER = "Validating accreditation ownership: ";
     public static final String VALIDATE_ACCREDITATION_OWNER_ERROR = "The user is not owner of this accreditation";
     public static final String VALIDATE_ACCREDITATION_OWNER_SUCCESSFULLY = "Accreditation owner validated successfully";
+
+    public static final String GET_USER_ID_SUCCESSFULLY = "User ID successfully obtained";
+    public static final String GET_USER_ID_FROM_EMAIL = "Retrieving user ID from email";
+    public static final String USER_ID_NULL_RESPONSE = "Null response from User Service at retrieving the user ID";
+    public static final String FALLBACK_USER_ID_FROM_EMAIL_ERROR = "Accreditation owner validated successfully";
+    public static final String COULD_NOT_CONNECT_USER_SERVICE = "User service currently unable to connect";
+
 }

@@ -21,7 +21,5 @@ public interface AccreditationService {
 
     ResponseEntity<AccreditationDTO> createAccreditation(String email, CreateAccreditationRequest newAccreditation) throws SalePointException, UserException;
 
-    Long getUserIdFromEmail(String email) throws UserException;
-
     void validateAccreditationOwner(Long userId, Long accreditationUserId) throws AccreditationException;
 }
