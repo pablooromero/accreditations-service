@@ -13,5 +13,8 @@ public class UserException extends Exception {
     this.httpStatus = httpStatus;
   }
 
-  public HttpStatus getHttpStatus() {return httpStatus;}
+    public UserException(String s, HttpStatus httpStatus, Throwable t) {
+    }
+
+    public HttpStatus getHttpStatus() {return httpStatus;}
 }

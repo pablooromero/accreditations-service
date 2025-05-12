@@ -13,6 +13,9 @@ public class SalePointException extends Exception {
         this.httpStatus = httpStatus;
     }
 
+    public SalePointException(String s, HttpStatus httpStatus, Throwable t) {
+    }
+
     public HttpStatus getHttpStatus() {return httpStatus;}
 }
 
