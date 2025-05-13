@@ -1,12 +1,16 @@
 package com.accreditations_service.accreditations_service.services.implementations;
 
+import com.accreditations_service.accreditations_service.config.RabbitMQConfig;
 import com.accreditations_service.accreditations_service.dtos.AccreditationDTO;
+import com.accreditations_service.accreditations_service.dtos.AccreditationDataForPdf;
+import com.accreditations_service.accreditations_service.dtos.AccreditationPdfEvent;
 import com.accreditations_service.accreditations_service.dtos.CreateAccreditationRequest;
 import com.accreditations_service.accreditations_service.exceptions.AccreditationException;
 import com.accreditations_service.accreditations_service.exceptions.SalePointException;
 import com.accreditations_service.accreditations_service.exceptions.UserException;
 import com.accreditations_service.accreditations_service.models.Accreditation;
 import com.accreditations_service.accreditations_service.repositories.AccreditationRepository;
+import com.accreditations_service.accreditations_service.services.AccreditationEventPublisherService;
 import com.accreditations_service.accreditations_service.services.AccreditationService;
 import com.accreditations_service.accreditations_service.services.SalePointClientService;
 import com.accreditations_service.accreditations_service.services.UserClientService;
@@ -16,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -32,6 +37,8 @@ public class AccreditationServiceImplementation implements AccreditationService 
     private final SalePointClientService  salePointClientService;
 
     private final UserClientService userClientService;
+
+    private final AccreditationEventPublisherService  accreditationEventPublisherService;
 
     @Override
     public Accreditation saveAccreditation(Accreditation accreditation) {
@@ -86,6 +93,7 @@ public class AccreditationServiceImplementation implements AccreditationService 
     }
 
     @Override
+    @Transactional
     public ResponseEntity<AccreditationDTO> createAccreditation(String email, CreateAccreditationRequest newAccreditation) throws SalePointException, UserException {
         log.info(Constants.CREATING_ACCREDITATION, newAccreditation);
         LocalDateTime now = LocalDateTime.now();
@@ -101,11 +109,39 @@ public class AccreditationServiceImplementation implements AccreditationService 
         accreditation.setReceiptDate(newAccreditation.receiptDate());
         accreditation.setCreatedAt(now);
 
-        saveAccreditation(accreditation);
+        Accreditation savedAccreditation = saveAccreditation(accreditation);
+        log.info(Constants.ACCREDITATION_CREATED_SUCCESSFULLY + " ID: {}", savedAccreditation.getId());
 
-        log.info(Constants.ACCREDITATION_CREATED_SUCCESSFULLY);
+        AccreditationDataForPdf pdfData = new AccreditationDataForPdf(
+                savedAccreditation.getId(),
+                savedAccreditation.getSalePointName(),
+                savedAccreditation.getUserId(),
+                email,
+                savedAccreditation.getAmount(),
+                savedAccreditation.getReceiptDate(),
+                savedAccreditation.getCreatedAt()
+        );
+        AccreditationPdfEvent pdfEvent = new AccreditationPdfEvent(
+                email,
+                "Confirmación de Acreditación - Comprobante N° " + savedAccreditation.getId(),
+                "Estimado/a Usuario,\n\nSu acreditación ha sido procesada exitosamente. Adjuntamos el comprobante correspondiente.\n\nSaludos.",
+                pdfData
+        );
 
-        AccreditationDTO accreditationDTO = new AccreditationDTO(accreditation.getId(), accreditation.getSalePointId(), accreditation.getUserId(), accreditation.getSalePointName(), accreditation.getAmount(), accreditation.getReceiptDate());
+        try {
+            accreditationEventPublisherService.publishAccreditationEvent(pdfEvent, savedAccreditation.getId());
+        } catch (Exception e) {
+            log.error("Error al enviar evento de PDF a RabbitMQ para acreditación ID {}: {}", savedAccreditation.getId(), e.getMessage(), e);
+        }
+
+        AccreditationDTO accreditationDTO = new AccreditationDTO(
+                savedAccreditation.getId(),
+                savedAccreditation.getSalePointId(),
+                savedAccreditation.getUserId(),
+                savedAccreditation.getSalePointName(),
+                savedAccreditation.getAmount(),
+                savedAccreditation.getReceiptDate()
+        );
         return new ResponseEntity<>(accreditationDTO, HttpStatus.CREATED);
     }
 
