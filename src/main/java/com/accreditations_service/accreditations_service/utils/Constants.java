@@ -29,4 +29,5 @@ public class Constants {
     public static final String FALLBACK_USER_ID_FROM_EMAIL_ERROR = "Accreditation owner validated successfully";
     public static final String COULD_NOT_CONNECT_USER_SERVICE = "User service currently unable to connect";
 
+    public static final String SALE_POINT_UNEXPECTED_RESPONSE = "Unexpected response for sale point:";
 }

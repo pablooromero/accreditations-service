@@ -2,7 +2,7 @@ package com.accreditations_service.accreditations_service.exceptions;
 
 import org.springframework.http.HttpStatus;
 
-public class AccreditationException extends Exception {
+public class AccreditationException extends RuntimeException {
     private HttpStatus httpStatus;
     public AccreditationException(String message) {
         super(message);

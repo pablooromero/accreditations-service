@@ -39,17 +39,28 @@ public class UserClientServiceImplementation implements UserClientService {
             log.info(Constants.GET_USER_ID_SUCCESSFULLY + " for email: {}. User ID: {}", email, userId);
             return userId;
 
-        } catch (HttpClientErrorException.NotFound e) {
-            log.warn(Constants.USER_NOT_FOUND + email, e);
-            throw new UserException(Constants.USER_NOT_FOUND + email, HttpStatus.NOT_FOUND, e);
         } catch (HttpClientErrorException e) {
-            log.warn(Constants.ERROR_CALLING_USER_SERVICE + " - Client Error for email: {}. Status: {}",
-                    email, e.getStatusCode(), e);
-            throw new UserException(Constants.ERROR_CALLING_USER_SERVICE + e.getMessage(), (HttpStatus) e.getStatusCode(), e);
+            HttpStatus status = HttpStatus.resolve(e.getStatusCode().value());
+            if (status == null) {
+                status = HttpStatus.BAD_REQUEST;
+            }
+
+            if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
+                log.warn(Constants.USER_NOT_FOUND + email, e);
+                throw new UserException(Constants.USER_NOT_FOUND + email, HttpStatus.NOT_FOUND, e);
+            } else {
+                log.warn(Constants.ERROR_CALLING_USER_SERVICE + " - Client Error for email: {}. Status: {}",
+                        email, e.getStatusCode(), e);
+                throw new UserException(Constants.ERROR_CALLING_USER_SERVICE + e.getMessage(), status, e);
+            }
         } catch (HttpServerErrorException e) {
+            HttpStatus status = HttpStatus.resolve(e.getStatusCode().value());
+            if (status == null) {
+                status = HttpStatus.INTERNAL_SERVER_ERROR;
+            }
             log.error(Constants.ERROR_CALLING_USER_SERVICE + " - Server Error for email: {}. Status: {}",
                     email, e.getStatusCode(), e);
-            throw new UserException(Constants.ERROR_CALLING_USER_SERVICE + e.getMessage(), (HttpStatus) e.getStatusCode(), e);
+            throw new UserException(Constants.ERROR_CALLING_USER_SERVICE + e.getMessage(), status, e);
         } catch (ResourceAccessException e) {
             log.error(Constants.COULD_NOT_CONNECT_USER_SERVICE + " for email: {}", email, e);
             throw new UserException(Constants.COULD_NOT_CONNECT_USER_SERVICE + e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE, e);
@@ -60,11 +71,12 @@ public class UserClientServiceImplementation implements UserClientService {
         log.warn("[FALLBACK] Fallback para getUserIdFromEmail ejecutado para email: {}. Causa: {} - {}",
                 email, t.getClass().getSimpleName(), t.getMessage());
 
-        if (t instanceof HttpClientErrorException.NotFound ||
-                (t instanceof UserException ue && ue.getHttpStatus() == HttpStatus.NOT_FOUND)) {
+        if ((t instanceof UserException ue && ue.getHttpStatus() == HttpStatus.NOT_FOUND) ||
+                (t instanceof HttpClientErrorException hce && hce.getStatusCode() == HttpStatus.NOT_FOUND) ) {
             log.warn("[FALLBACK] Usuario no encontrado para email: {} (desde fallback).", email);
-            throw new UserException(Constants.USER_NOT_FOUND + email + " (Fallback: servicio contactado, usuario no existe)", HttpStatus.NOT_FOUND, t);
+            throw new UserException(Constants.USER_NOT_FOUND + email + " (Fallback)", HttpStatus.NOT_FOUND, t);
         }
+
         throw new UserException(
                 Constants.FALLBACK_USER_ID_FROM_EMAIL_ERROR + email, HttpStatus.SERVICE_UNAVAILABLE, t
         );

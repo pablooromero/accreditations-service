@@ -2,8 +2,6 @@ package com.accreditations_service.accreditations_service.controllers;
 
 import com.accreditations_service.accreditations_service.dtos.AccreditationDTO;
 import com.accreditations_service.accreditations_service.dtos.CreateAccreditationRequest;
-import com.accreditations_service.accreditations_service.exceptions.AccreditationException;
-import com.accreditations_service.accreditations_service.exceptions.SalePointException;
 import com.accreditations_service.accreditations_service.exceptions.UserException;
 import com.accreditations_service.accreditations_service.services.AccreditationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -59,7 +57,7 @@ public class AccreditationController {
     })
     @GetMapping("/admin/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<AccreditationDTO> getAccreditationById(@PathVariable Long id) throws AccreditationException {
+    public ResponseEntity<AccreditationDTO> getAccreditationById(@PathVariable Long id) {
         return accreditationService.getAccreditationById(id);
     }
 
@@ -76,7 +74,7 @@ public class AccreditationController {
             @ApiResponse(responseCode = "500", description = "Internal Server Error")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<AccreditationDTO> getAccreditationByIdForUser(@PathVariable long id, Authentication authentication) throws AccreditationException, UserException {
+    public ResponseEntity<AccreditationDTO> getAccreditationByIdForUser(@PathVariable long id, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated() || !(authentication.getPrincipal() instanceof Jwt)) {
             throw new UserException("Usuario no autenticado o token inválido.", HttpStatus.UNAUTHORIZED);
         }
@@ -103,7 +101,7 @@ public class AccreditationController {
             @ApiResponse(responseCode = "500", description = "Internal Server Error")
     })
     @PostMapping
-    public ResponseEntity<AccreditationDTO> createAccreditation(@RequestBody CreateAccreditationRequest newAccreditation, Authentication authentication) throws SalePointException, UserException {
+    public ResponseEntity<AccreditationDTO> createAccreditation(@RequestBody CreateAccreditationRequest newAccreditation, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated() || !(authentication.getPrincipal() instanceof Jwt)) {
             throw new UserException("Usuario no autenticado o token inválido.", HttpStatus.UNAUTHORIZED);
         }
