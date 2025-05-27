@@ -29,11 +29,9 @@ import java.util.Set;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -119,7 +117,7 @@ class AccreditationControllerTest {
     @Test
     @DisplayName("GET /api/accreditations/{id} - Debería devolver acreditación para usuario autenticado si es propietario")
     void getAccreditationByIdForUser_whenOwner_shouldReturnAccreditation() throws Exception {
-        when(accreditationService.getAccreditationByIdUser(eq(200L), eq(1L)))
+        when(accreditationService.getAccreditationByIdUser(200L, 1L))
                 .thenReturn(ResponseEntity.ok(accreditationDTO1));
 
         mockMvc.perform(get("/api/accreditations/1")
@@ -133,7 +131,7 @@ class AccreditationControllerTest {
     @Test
     @DisplayName("GET /api/accreditations/{id} - Debería devolver 403 (o 401 por la excepción) si usuario no es propietario")
     void getAccreditationByIdForUser_whenNotOwner_shouldReturnForbiddenOrUnauthorized() throws Exception {
-        when(accreditationService.getAccreditationByIdUser(eq(999L), eq(1L)))
+        when(accreditationService.getAccreditationByIdUser(999L, 1L))
                 .thenThrow(new AccreditationException(Constants.NOT_PERM, HttpStatus.UNAUTHORIZED));
 
         mockMvc.perform(get("/api/accreditations/1")

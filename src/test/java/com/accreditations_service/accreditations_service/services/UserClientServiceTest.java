@@ -12,6 +12,7 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
@@ -44,7 +45,7 @@ class UserClientServiceTest {
         String email = "test@example.com";
         Long expectedUserId = 123L;
         String expectedUrl = userServiceBaseUrl + "private/email/" + email;
-        when(restTemplate.getForObject(eq(expectedUrl), eq(Long.class))).thenReturn(expectedUserId);
+        when(restTemplate.getForObject(expectedUrl, Long.class)).thenReturn(expectedUserId);
 
         Long actualUserId = userClientService.getUserIdFromEmail(email);
 
@@ -57,7 +58,7 @@ class UserClientServiceTest {
     void getUserIdFromEmail_whenServiceReturnsNull_shouldThrowUserException() {
         String email = "test@example.com";
         String expectedUrl = userServiceBaseUrl + "private/email/" + email;
-        when(restTemplate.getForObject(eq(expectedUrl), eq(Long.class))).thenReturn(null);
+        when(restTemplate.getForObject(expectedUrl, Long.class)).thenReturn(null);
 
         UserException exception = assertThrows(UserException.class, () -> {
             userClientService.getUserIdFromEmail(email);
@@ -67,11 +68,50 @@ class UserClientServiceTest {
     }
 
     @Test
+    @DisplayName("getUserIdFromEmail - Debería lanzar UserException (BAD_REQUEST) en HttpClientErrorException con status 400")
+    void getUserIdFromEmail_whenBadRequest_shouldThrowUserExceptionWithOriginalStatus() {
+        String email = "badrequest@example.com";
+        String expectedUrl = userServiceBaseUrl + "private/email/" + email;
+        HttpClientErrorException cause = new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Simulated Bad Request");
+        when(restTemplate.getForObject(expectedUrl, Long.class))
+                .thenThrow(cause);
+
+        UserException exception = assertThrows(UserException.class, () -> {
+            userClientService.getUserIdFromEmail(email);
+        });
+        String expectedMessage = Constants.ERROR_CALLING_USER_SERVICE + cause.getMessage();
+        assertEquals(expectedMessage, exception.getMessage());
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getHttpStatus());
+        assertEquals(cause, exception.getCause());
+    }
+
+    @Test
+    @DisplayName("getUserIdFromEmail - Debería usar HttpStatus.BAD_REQUEST por defecto si HttpClientErrorException tiene status no estándar")
+    void getUserIdFromEmail_whenHttpClientErrorWithNonStandardStatus_shouldDefaultToBadRequest() {
+        String email = "nonstandard@example.com";
+        String expectedUrl = userServiceBaseUrl + "private/email/" + email;
+
+        HttpStatusCode nonStandardStatusCode = HttpStatusCode.valueOf(499);
+        HttpClientErrorException cause = HttpClientErrorException.create(nonStandardStatusCode, "Client Error Custom Status", null, null, null);
+
+        when(restTemplate.getForObject(expectedUrl, Long.class))
+                .thenThrow(cause);
+
+        UserException exception = assertThrows(UserException.class, () -> {
+            userClientService.getUserIdFromEmail(email);
+        });
+        String expectedMessage = Constants.ERROR_CALLING_USER_SERVICE + cause.getMessage();
+        assertEquals(expectedMessage, exception.getMessage());
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getHttpStatus());
+        assertEquals(cause, exception.getCause());
+    }
+
+    @Test
     @DisplayName("getUserIdFromEmail - Debería lanzar UserException (NOT_FOUND) en HttpClientErrorException.NotFound")
     void getUserIdFromEmail_whenNotFound_shouldThrowUserException() {
         String email = "notfound@example.com";
         String expectedUrl = userServiceBaseUrl + "private/email/" + email;
-        when(restTemplate.getForObject(eq(expectedUrl), eq(Long.class)))
+        when(restTemplate.getForObject(expectedUrl, Long.class))
                 .thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND, "User Not Found"));
 
         UserException exception = assertThrows(UserException.class, () -> {
@@ -86,7 +126,7 @@ class UserClientServiceTest {
     void getUserIdFromEmail_whenNetworkError_shouldThrowUserException() {
         String email = "networkerror@example.com";
         String expectedUrl = userServiceBaseUrl + "private/email/" + email;
-        when(restTemplate.getForObject(eq(expectedUrl), eq(Long.class)))
+        when(restTemplate.getForObject(expectedUrl, Long.class))
                 .thenThrow(new ResourceAccessException("Connection refused"));
 
         UserException exception = assertThrows(UserException.class, () -> {
@@ -101,7 +141,7 @@ class UserClientServiceTest {
     void getUserIdFromEmail_whenServerError_shouldThrowUserException() {
         String email = "servererror@example.com";
         String expectedUrl = userServiceBaseUrl + "private/email/" + email;
-        when(restTemplate.getForObject(eq(expectedUrl), eq(Long.class)))
+        when(restTemplate.getForObject(expectedUrl, Long.class))
                 .thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "Server Error"));
 
         UserException exception = assertThrows(UserException.class, () -> {

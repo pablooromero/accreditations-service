@@ -51,7 +51,7 @@ class SalePointClientServiceTest {
         ResponseEntity<SalePointDTO> responseEntity = ResponseEntity.ok(dto);
         String expectedUrl = salesPointServiceBaseUrl + salePointId;
 
-        when(restTemplate.getForEntity(eq(expectedUrl), eq(SalePointDTO.class))).thenReturn(responseEntity);
+        when(restTemplate.getForEntity(expectedUrl, SalePointDTO.class)).thenReturn(responseEntity);
 
         String actualName = salePointClientService.getSalePointName(salePointId);
 
@@ -65,7 +65,7 @@ class SalePointClientServiceTest {
         Long salePointId = 1L;
         ResponseEntity<SalePointDTO> responseEntity = ResponseEntity.ok(null);
         String expectedUrl = salesPointServiceBaseUrl + salePointId;
-        when(restTemplate.getForEntity(eq(expectedUrl), eq(SalePointDTO.class))).thenReturn(responseEntity);
+        when(restTemplate.getForEntity(expectedUrl, SalePointDTO.class)).thenReturn(responseEntity);
 
         SalePointException exception = assertThrows(SalePointException.class, () -> {
             salePointClientService.getSalePointName(salePointId);
@@ -81,7 +81,7 @@ class SalePointClientServiceTest {
         SalePointDTO dtoWithNullName = new SalePointDTO(salePointId, null);
         ResponseEntity<SalePointDTO> responseEntity = ResponseEntity.ok(dtoWithNullName);
         String expectedUrl = salesPointServiceBaseUrl + salePointId;
-        when(restTemplate.getForEntity(eq(expectedUrl), eq(SalePointDTO.class))).thenReturn(responseEntity);
+        when(restTemplate.getForEntity(expectedUrl, SalePointDTO.class)).thenReturn(responseEntity);
 
         SalePointException exception = assertThrows(SalePointException.class, () -> {
             salePointClientService.getSalePointName(salePointId);
@@ -96,7 +96,7 @@ class SalePointClientServiceTest {
     void getSalePointName_whenNotFound_shouldThrowSalePointException() {
         Long salePointId = 99L;
         String expectedUrl = salesPointServiceBaseUrl + salePointId;
-        when(restTemplate.getForEntity(eq(expectedUrl), eq(SalePointDTO.class)))
+        when(restTemplate.getForEntity(expectedUrl, SalePointDTO.class))
                 .thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND, "Sale Point Not Found"));
 
         SalePointException exception = assertThrows(SalePointException.class, () -> {
@@ -112,7 +112,7 @@ class SalePointClientServiceTest {
         Long salePointId = 1L;
         String expectedUrl = salesPointServiceBaseUrl + salePointId;
         HttpClientErrorException cause = new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Client Error");
-        when(restTemplate.getForEntity(eq(expectedUrl), eq(SalePointDTO.class))).thenThrow(cause);
+        when(restTemplate.getForEntity(expectedUrl, SalePointDTO.class)).thenThrow(cause);
 
         SalePointException exception = assertThrows(SalePointException.class, () -> {
             salePointClientService.getSalePointName(salePointId);
@@ -127,7 +127,7 @@ class SalePointClientServiceTest {
         Long salePointId = 1L;
         String expectedUrl = salesPointServiceBaseUrl + salePointId;
         HttpServerErrorException cause = new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "Server Error");
-        when(restTemplate.getForEntity(eq(expectedUrl), eq(SalePointDTO.class))).thenThrow(cause);
+        when(restTemplate.getForEntity(expectedUrl, SalePointDTO.class)).thenThrow(cause);
 
         SalePointException exception = assertThrows(SalePointException.class, () -> {
             salePointClientService.getSalePointName(salePointId);
@@ -143,7 +143,7 @@ class SalePointClientServiceTest {
     void getSalePointName_whenNetworkError_shouldThrowSalePointException() {
         Long salePointId = 1L;
         String expectedUrl = salesPointServiceBaseUrl + salePointId;
-        when(restTemplate.getForEntity(eq(expectedUrl), eq(SalePointDTO.class)))
+        when(restTemplate.getForEntity(expectedUrl, SalePointDTO.class))
                 .thenThrow(new ResourceAccessException("Connection refused"));
 
         SalePointException exception = assertThrows(SalePointException.class, () -> {
