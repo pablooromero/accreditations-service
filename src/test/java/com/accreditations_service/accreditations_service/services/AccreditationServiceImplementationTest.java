@@ -76,15 +76,12 @@ class AccreditationServiceImplementationTest {
     @Test
     @DisplayName("saveAccreditation - Debería guardar y devolver la acreditación")
     void saveAccreditation_shouldSaveAndReturnAccreditation() {
-        // Arrange
-        Accreditation inputAccreditation = new Accreditation(); // sin ID
+        Accreditation inputAccreditation = new Accreditation();
         inputAccreditation.setAmount(100.0);
-        when(accreditationRepository.save(any(Accreditation.class))).thenReturn(accreditation1); // Devuelve con ID
+        when(accreditationRepository.save(any(Accreditation.class))).thenReturn(accreditation1);
 
-        // Act
         Accreditation result = accreditationService.saveAccreditation(inputAccreditation);
 
-        // Assert
         assertNotNull(result);
         assertEquals(accreditation1.getId(), result.getId());
         verify(accreditationRepository, times(1)).save(inputAccreditation);
@@ -93,17 +90,14 @@ class AccreditationServiceImplementationTest {
     @Test
     @DisplayName("getAllAccreditations - Debería devolver un Set de AccreditationDTOs")
     void getAllAccreditations_shouldReturnSetOfAccreditationDTOs() {
-        // Arrange
         Accreditation accreditation2 = new Accreditation(
                 2L, 101L, 2L, 200.0, "Punto B",
                 LocalDateTime.now(), LocalDateTime.now(), null, null
         );
         when(accreditationRepository.findAll()).thenReturn(List.of(accreditation1, accreditation2));
 
-        // Act
         ResponseEntity<Set<AccreditationDTO>> response = accreditationService.getAllAccreditations();
 
-        // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(2, response.getBody().size());
@@ -113,13 +107,10 @@ class AccreditationServiceImplementationTest {
     @Test
     @DisplayName("getAccreditationById - Cuando existe, debería devolver AccreditationDTO")
     void getAccreditationById_whenExists_shouldReturnAccreditationDTO() throws AccreditationException {
-        // Arrange
         when(accreditationRepository.findById(1L)).thenReturn(Optional.of(accreditation1));
 
-        // Act
         ResponseEntity<AccreditationDTO> response = accreditationService.getAccreditationById(1L);
 
-        // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(accreditation1.getId(), response.getBody().id());
@@ -129,10 +120,8 @@ class AccreditationServiceImplementationTest {
     @Test
     @DisplayName("getAccreditationById - Cuando no existe, debería lanzar AccreditationException")
     void getAccreditationById_whenNotExists_shouldThrowAccreditationException() {
-        // Arrange
         when(accreditationRepository.findById(99L)).thenReturn(Optional.empty());
 
-        // Act & Assert
         AccreditationException exception = assertThrows(AccreditationException.class, () -> {
             accreditationService.getAccreditationById(99L);
         });
@@ -143,14 +132,10 @@ class AccreditationServiceImplementationTest {
     @Test
     @DisplayName("getAccreditationByIdUser - Cuando existe y es propietario, debería devolver AccreditationDTO")
     void getAccreditationByIdUser_whenExistsAndIsOwner_shouldReturnAccreditationDTO() throws AccreditationException {
-        // Arrange
         when(accreditationRepository.findById(accreditation1.getId())).thenReturn(Optional.of(accreditation1));
-        // validateAccreditationOwner no lanzará excepción porque testUserId == accreditation1.getUserId()
 
-        // Act
         ResponseEntity<AccreditationDTO> response = accreditationService.getAccreditationByIdUser(testUserId, accreditation1.getId());
 
-        // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(accreditation1.getId(), response.getBody().id());
@@ -159,12 +144,9 @@ class AccreditationServiceImplementationTest {
     @Test
     @DisplayName("getAccreditationByIdUser - Cuando existe pero no es propietario, debería lanzar AccreditationException (UNAUTHORIZED)")
     void getAccreditationByIdUser_whenExistsAndNotOwner_shouldThrowAccreditationException() {
-        // Arrange
         Long otherUserId = 999L;
         when(accreditationRepository.findById(accreditation1.getId())).thenReturn(Optional.of(accreditation1));
-        // validateAccreditationOwner lanzará excepción
 
-        // Act & Assert
         AccreditationException exception = assertThrows(AccreditationException.class, () -> {
             accreditationService.getAccreditationByIdUser(otherUserId, accreditation1.getId());
         });
@@ -175,22 +157,18 @@ class AccreditationServiceImplementationTest {
     @Test
     @DisplayName("getAccreditationByIdUser - Cuando no existe la acreditación, debería lanzar AccreditationException (NOT_FOUND)")
     void getAccreditationByIdUser_whenAccreditationNotExists_shouldThrowAccreditationException() {
-        // Arrange
         when(accreditationRepository.findById(99L)).thenReturn(Optional.empty());
 
-        // Act & Assert
         AccreditationException exception = assertThrows(AccreditationException.class, () -> {
             accreditationService.getAccreditationByIdUser(testUserId, 99L);
         });
         assertEquals(Constants.ACCREDITATION_NOT_FOUND + 99L, exception.getMessage());
         assertEquals(HttpStatus.NOT_FOUND, exception.getHttpStatus());
-        // validateAccreditationOwner no debería ser llamado si la acreditación no se encuentra
     }
 
     @Test
     @DisplayName("validateAccreditationOwner - Cuando IDs coinciden, no debería lanzar excepción")
     void validateAccreditationOwner_whenIdsMatch_shouldNotThrowException() {
-        // Act & Assert
         assertDoesNotThrow(() -> {
             accreditationService.validateAccreditationOwner(testUserId, testUserId);
         });
@@ -199,7 +177,6 @@ class AccreditationServiceImplementationTest {
     @Test
     @DisplayName("validateAccreditationOwner - Cuando IDs no coinciden, debería lanzar AccreditationException")
     void validateAccreditationOwner_whenIdsDoNotMatch_shouldThrowAccreditationException() {
-        // Act & Assert
         AccreditationException exception = assertThrows(AccreditationException.class, () -> {
             accreditationService.validateAccreditationOwner(testUserId, 999L);
         });
@@ -208,31 +185,26 @@ class AccreditationServiceImplementationTest {
     }
 
 
-    // --- Tests para createAccreditation ---
     @Test
     @DisplayName("createAccreditation - Con datos válidos, debería crear y publicar evento")
     void createAccreditation_withValidData_shouldCreateAndPublishEvent() throws SalePointException, UserException {
-        // Arrange
         when(salePointClientService.getSalePointName(createRequest.salePointId())).thenReturn(testSalePointName);
         when(userClientService.getUserIdFromEmail(testEmail)).thenReturn(testUserId);
 
         Accreditation savedAccreditation = new Accreditation();
-        // Simular que el save asigna un ID y otros campos si es necesario
-        savedAccreditation.setId(5L); // ID generado
+        savedAccreditation.setId(5L);
         savedAccreditation.setSalePointId(createRequest.salePointId());
         savedAccreditation.setUserId(testUserId);
         savedAccreditation.setAmount(createRequest.amount());
         savedAccreditation.setSalePointName(testSalePointName);
         savedAccreditation.setReceiptDate(createRequest.receiptDate());
-        savedAccreditation.setCreatedAt(LocalDateTime.now()); // El servicio setea 'now'
+        savedAccreditation.setCreatedAt(LocalDateTime.now());
 
         when(accreditationRepository.save(any(Accreditation.class))).thenReturn(savedAccreditation);
         doNothing().when(accreditationEventPublisherService).publishAccreditationEvent(any(AccreditationPdfEvent.class), anyLong());
 
-        // Act
         ResponseEntity<AccreditationDTO> response = accreditationService.createAccreditation(testEmail, createRequest);
 
-        // Assert
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(savedAccreditation.getId(), response.getBody().id());
@@ -249,22 +221,20 @@ class AccreditationServiceImplementationTest {
 
         ArgumentCaptor<AccreditationPdfEvent> eventCaptor = ArgumentCaptor.forClass(AccreditationPdfEvent.class);
         verify(accreditationEventPublisherService, times(1)).publishAccreditationEvent(eventCaptor.capture(), eq(savedAccreditation.getId()));
-        assertEquals(testEmail, eventCaptor.getValue().getTo()); // to en AccreditationPdfEvent
+        assertEquals(testEmail, eventCaptor.getValue().getTo());
         assertEquals(savedAccreditation.getId(), eventCaptor.getValue().getAccreditationData().getAccreditationId());
     }
 
     @Test
     @DisplayName("createAccreditation - Cuando SalePointClientService falla, debería lanzar SalePointException")
     void createAccreditation_whenSalePointClientFails_shouldThrowSalePointException() throws SalePointException, UserException {
-        // Arrange
         SalePointException salePointEx = new SalePointException("Error SP", HttpStatus.SERVICE_UNAVAILABLE);
         when(salePointClientService.getSalePointName(createRequest.salePointId())).thenThrow(salePointEx);
 
-        // Act & Assert
         SalePointException thrown = assertThrows(SalePointException.class, () -> {
             accreditationService.createAccreditation(testEmail, createRequest);
         });
-        assertEquals(salePointEx, thrown); // Verifica que se propaga la misma excepción
+        assertEquals(salePointEx, thrown);
         verify(userClientService, never()).getUserIdFromEmail(anyString());
         verify(accreditationRepository, never()).save(any(Accreditation.class));
         verify(accreditationEventPublisherService, never()).publishAccreditationEvent(any(), anyLong());
@@ -273,12 +243,10 @@ class AccreditationServiceImplementationTest {
     @Test
     @DisplayName("createAccreditation - Cuando UserClientService falla, debería lanzar UserException")
     void createAccreditation_whenUserClientFails_shouldThrowUserException() throws SalePointException, UserException {
-        // Arrange
         when(salePointClientService.getSalePointName(createRequest.salePointId())).thenReturn(testSalePointName);
         UserException userEx = new UserException("Error User", HttpStatus.SERVICE_UNAVAILABLE);
         when(userClientService.getUserIdFromEmail(testEmail)).thenThrow(userEx);
 
-        // Act & Assert
         UserException thrown = assertThrows(UserException.class, () -> {
             accreditationService.createAccreditation(testEmail, createRequest);
         });
@@ -290,7 +258,6 @@ class AccreditationServiceImplementationTest {
     @Test
     @DisplayName("createAccreditation - Cuando EventPublisher falla, la acreditación se crea y se loguea el error")
     void createAccreditation_whenEventPublisherFails_shouldStillCreateAccreditation() throws SalePointException, UserException {
-        // Arrange
         when(salePointClientService.getSalePointName(createRequest.salePointId())).thenReturn(testSalePointName);
         when(userClientService.getUserIdFromEmail(testEmail)).thenReturn(testUserId);
 
@@ -304,21 +271,15 @@ class AccreditationServiceImplementationTest {
         savedAccreditation.setCreatedAt(LocalDateTime.now());
 
         when(accreditationRepository.save(any(Accreditation.class))).thenReturn(savedAccreditation);
-        // Simular fallo en el publicador de eventos
         doThrow(new RuntimeException("Error simulado al publicar evento"))
                 .when(accreditationEventPublisherService).publishAccreditationEvent(any(AccreditationPdfEvent.class), anyLong());
 
-        // Act
         ResponseEntity<AccreditationDTO> response = accreditationService.createAccreditation(testEmail, createRequest);
 
-        // Assert
-        // La acreditación se crea exitosamente
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(savedAccreditation.getId(), response.getBody().id());
 
-        // Se intentó publicar el evento
         verify(accreditationEventPublisherService, times(1)).publishAccreditationEvent(any(AccreditationPdfEvent.class), eq(savedAccreditation.getId()));
-        // Aquí podrías usar un LogCaptor para verificar que el error del publisher se logueó
     }
 }
